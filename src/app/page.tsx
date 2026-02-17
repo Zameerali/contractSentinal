@@ -82,8 +82,8 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section — Split Layout */}
-      <section className="relative px-6 pt-28 pb-20">
-        <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2">
+      <section className="relative w-full h-screen flex items-center justify-center px-6">
+        <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2 w-full">
           {/* Left — Text */}
           <div>
             <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1 text-xs font-medium text-zinc-400">
