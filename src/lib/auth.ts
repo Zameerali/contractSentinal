@@ -8,12 +8,14 @@ export interface AuthUser extends JWTPayload {
   name?: string;
 }
 
-const ACCESS_SECRET = new TextEncoder().encode(
-  process.env.JWT_ACCESS_SECRET || "dev-access-secret-change-me-32chars!!",
-);
-const REFRESH_SECRET = new TextEncoder().encode(
-  process.env.JWT_REFRESH_SECRET || "dev-refresh-secret-change-me-32chars!!",
-);
+if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+  throw new Error(
+    "FATAL: JWT_ACCESS_SECRET and JWT_REFRESH_SECRET environment variables must be set.",
+  );
+}
+
+const ACCESS_SECRET = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET);
+const REFRESH_SECRET = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET);
 
 export async function createAccessToken(payload: Record<string, unknown>) {
   return new SignJWT(payload)
