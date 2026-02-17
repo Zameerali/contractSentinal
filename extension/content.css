@@ -1,0 +1,14 @@
+/* ContractSentinel Content Script Styles */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+#cs-overlay {
+  all: initial;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+#cs-scan-badge {
+  transition: all 0.2s ease;
+}

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { width: 380px; min-height: 480px; background: #09090b; color: #d4d4d8; font-family: system-ui, -apple-system, sans-serif; }
+    .header { display: flex; align-items: center; gap: 10px; padding: 16px; border-bottom: 1px solid #27272a; }
+    .header img { width: 24px; height: 24px; }
+    .header h1 { font-size: 16px; font-weight: 700; color: white; }
+    .header h1 span { color: #10b981; }
+    .content { padding: 16px; }
+    .tabs { display: flex; border-bottom: 1px solid #27272a; }
+    .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-size: 12px; font-weight: 600; color: #71717a; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab.active { color: #10b981; border-bottom-color: #10b981; }
+    .tab:hover { color: #a1a1aa; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; font-size: 11px; color: #71717a; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    input, select { width: 100%; padding: 10px 12px; background: #18181b; border: 1px solid #27272a; border-radius: 10px; color: white; font-size: 13px; outline: none; }
+    input:focus, select:focus { border-color: rgba(16, 185, 129, 0.5); }
+    input[type="text"], input[type="password"] { font-family: monospace; }
+    select { cursor: pointer; font-family: system-ui; }
+    .btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+    .btn:hover { background: #059669; }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .btn-outline { background: transparent; border: 1px solid #27272a; color: #a1a1aa; }
+    .btn-outline:hover { border-color: #10b981; color: #10b981; }
+    .btn-sm { padding: 8px; font-size: 12px; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .result { margin-top: 16px; padding: 16px; border-radius: 12px; border: 1px solid #27272a; }
+    .result.safe { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); }
+    .result.danger { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); }
+    .result.warn { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); }
+    .score { font-size: 36px; font-weight: 900; text-align: center; margin: 8px 0; }
+    .score.safe { color: #10b981; }
+    .score.danger { color: #ef4444; }
+    .score.warn { color: #f59e0b; }
+    .verdict { text-align: center; font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .summary { font-size: 12px; color: #a1a1aa; line-height: 1.6; }
+    .finding { padding: 8px 10px; margin: 4px 0; border-radius: 8px; font-size: 11px; background: #18181b; border: 1px solid #27272a; line-height: 1.5; }
+    .finding.high { border-color: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .finding.medium { border-color: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .finding.low { border-color: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+    .footer { padding: 12px 16px; border-top: 1px solid #27272a; text-align: center; font-size: 11px; color: #52525b; }
+    .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .auto-detected { padding: 8px 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; margin-bottom: 12px; font-size: 12px; color: #10b981; display: flex; align-items: center; gap: 6px; }
+    .auto-detected svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .logged-in-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: rgba(16, 185, 129, 0.05); border-bottom: 1px solid #27272a; font-size: 12px; }
+    .logged-in-bar .email { color: #10b981; font-weight: 600; }
+    .logged-in-bar button { background: none; border: none; color: #71717a; cursor: pointer; font-size: 11px; text-decoration: underline; }
+    .logged-in-bar button:hover { color: #ef4444; }
+    .hidden { display: none !important; }
+    .status-msg { padding: 8px 12px; border-radius: 8px; font-size: 12px; margin: 8px 0; }
+    .status-msg.error { background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .status-msg.success { background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .chain-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; background: rgba(16, 185, 129, 0.1); color: #10b981; margin-bottom: 8px; }
+    .view-btn { display: inline-block; margin-top: 12px; padding: 8px 16px; background: #18181b; border: 1px solid #27272a; border-radius: 8px; color: #a1a1aa; font-size: 12px; text-decoration: none; text-align: center; cursor: pointer; width: 100%; }
+    .view-btn:hover { border-color: #10b981; color: #10b981; }
+  </style>
+</head>
+<body>
+  <!-- Logged in user bar -->
+  <div id="user-bar" class="logged-in-bar hidden">
+    <span>Signed in as <span id="user-email" class="email"></span></span>
+    <button id="logoutBtn">Sign out</button>
+  </div>
+
+  <div class="header">
+    <img src="icons/icon.svg" alt="CS" />
+    <h1>Contract<span>Sentinel</span></h1>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-tab="scan">Scan</div>
+    <div class="tab" data-tab="login">Account</div>
+    <div class="tab" data-tab="settings">Settings</div>
+  </div>
+
+  <!-- SCAN TAB -->
+  <div id="tab-scan" class="tab-content active">
+    <div class="content">
+      <div id="auto-detect" class="auto-detected hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        <span id="auto-detect-text">Contract detected on page</span>
+      </div>
+
+      <div class="input-group">
+        <label>Contract Address</label>
+        <input type="text" id="address" placeholder="0x..." />
+      </div>
+
+      <div class="input-group">
+        <label>Chain</label>
+        <select id="chain">
+          <option value="1">Ethereum</option>
+          <option value="137">Polygon</option>
+          <option value="42161">Arbitrum</option>
+          <option value="10">Optimism</option>
+          <option value="56">BNB Chain</option>
+        </select>
+      </div>
+
+      <button class="btn" id="scanBtn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        Scan Contract
+      </button>
+
+      <div id="login-prompt" class="status-msg error hidden">
+        You need to sign in first. Go to the Account tab to log in.
+      </div>
+
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <!-- LOGIN TAB -->
+  <div id="tab-login" class="tab-content">
+    <div class="content">
+      <div id="login-form">
+        <div class="input-group">
+          <label>Email</label>
+          <input type="text" id="login-email" placeholder="you@example.com" style="font-family: system-ui;" />
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" style="font-family: system-ui;" />
+        </div>
+        <button class="btn" id="loginBtn">Sign In</button>
+        <div id="login-status"></div>
+        <p style="text-align: center; margin-top: 16px; font-size: 12px; color: #71717a;">
+          Don't have an account? Register at
+          <a href="http://localhost:3001/register" target="_blank" style="color: #10b981; text-decoration: none;">ContractSentinel</a>
+        </p>
+      </div>
+      <div id="logged-in-info" class="hidden" style="text-align: center; padding-top: 20px;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" style="margin: 0 auto 12px;">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+        <p style="color: white; font-weight: 600; font-size: 16px; margin-bottom: 4px;">You're signed in!</p>
+        <p style="color: #71717a; font-size: 13px; margin-bottom: 20px;" id="logged-in-email"></p>
+        <a href="http://localhost:3001/dashboard" target="_blank" class="view-btn">Open Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div id="tab-settings" class="tab-content">
+    <div class="content">
+      <div class="input-group">
+        <label>Server URL</label>
+        <input type="text" id="server-url" placeholder="http://localhost:3001" style="font-family: system-ui;" />
+      </div>
+      <button class="btn btn-sm btn-outline" id="saveSettingsBtn" style="margin-bottom: 12px;">Save Settings</button>
+      <div id="settings-status"></div>
+      <hr style="border: none; border-top: 1px solid #27272a; margin: 16px 0;" />
+      <p style="font-size: 11px; color: #52525b; line-height: 1.8;">
+        <strong style="color: #a1a1aa;">How it works:</strong><br/>
+        1. Visit any contract on Etherscan, Polygonscan, Arbiscan, or Optimistic Etherscan<br/>
+        2. The extension auto-detects the contract address<br/>
+        3. Click "Scan Contract" to analyze for honeypots & rug pulls<br/>
+        4. Results appear both in the popup and as a page overlay
+      </p>
+    </div>
+  </div>
+
+  <div class="footer">
+    ContractSentinel v1.0 · Not financial advice
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
