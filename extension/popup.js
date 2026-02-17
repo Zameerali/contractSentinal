@@ -44,6 +44,13 @@ const CHAIN_NAMES = {
 }
 
 // ── Initialize ──────────────────────────────────────────────────────
+
+// Helper to update button state based on auth and address
+function updateScanButtonState() {
+  const addressValid = /^0x[a-fA-F0-9]{40}$/.test(addressInput.value.trim())
+  scanBtn.disabled = !authToken || !addressValid
+}
+
 async function init() {
   // Load saved settings
   const stored = await chrome.storage.local.get(['authToken', 'userEmail', 'serverUrl'])
@@ -60,10 +67,9 @@ async function init() {
     showLoggedIn()
   }
 
-  // Validate address input
+  // Validate address input and update button state
   addressInput.addEventListener('input', () => {
-    const valid = /^0x[a-fA-F0-9]{40}$/.test(addressInput.value.trim())
-    scanBtn.disabled = !valid
+    updateScanButtonState()
   })
 
   // Auto-detect contract from current tab URL
@@ -74,7 +80,7 @@ async function init() {
       const addrMatch = url.match(/(?:address|token)\/(0x[a-fA-F0-9]{40})/)
       if (addrMatch) {
         addressInput.value = addrMatch[1]
-        scanBtn.disabled = false
+        updateScanButtonState()
         autoDetectDiv.classList.remove('hidden')
 
         // Auto-detect chain from explorer URL
@@ -103,7 +109,7 @@ async function init() {
         const outputCurrency = urlObj.searchParams.get('outputCurrency')
         if (outputCurrency && /^0x[a-fA-F0-9]{40}$/.test(outputCurrency)) {
           addressInput.value = outputCurrency
-          scanBtn.disabled = false
+          updateScanButtonState()
           autoDetectDiv.classList.remove('hidden')
           autoDetectText.textContent = 'Token detected from Uniswap'
         }
@@ -151,6 +157,7 @@ loginBtn.addEventListener('click', async () => {
       userEmail = data.user?.email || email
       await chrome.storage.local.set({ authToken, userEmail })
       showLoggedIn()
+      updateScanButtonState()
       showStatus(loginStatus, 'Signed in successfully!', 'success')
       // Switch to scan tab
       setTimeout(() => {
@@ -177,6 +184,7 @@ logoutBtn.addEventListener('click', async () => {
   authToken = null
   userEmail = null
   await chrome.storage.local.remove(['authToken', 'userEmail'])
+  updateScanButtonState()
   showLoggedOut()
 })
 
