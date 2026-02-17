@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -17,8 +17,14 @@ function GoogleButton({
   onSuccess: (credential: string) => void;
 }) {
   const [ready, setReady] = useState(false);
+  const btnRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
+  const callbackRef = useRef(onSuccess);
+  callbackRef.current = onSuccess;
 
   useEffect(() => {
+    if (initializedRef.current) return;
+
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!clientId) {
       console.warn("NEXT_PUBLIC_GOOGLE_CLIENT_ID not set");
@@ -26,35 +32,30 @@ function GoogleButton({
     }
 
     const initGoogleButton = () => {
-      if (window.google?.accounts?.id) {
+      if (window.google?.accounts?.id && btnRef.current) {
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: (response: any) => {
             if (response.credential) {
-              onSuccess(response.credential);
+              callbackRef.current(response.credential);
             }
           },
         });
-        const button = document.getElementById("google-signin-btn");
-        if (button) {
-          window.google.accounts.id.renderButton(button, {
-            theme: "filled_black",
-            size: "large",
-            width: "100%",
-            shape: "pill",
-            text: "continue_with",
-          });
-          // Fade in after render
-          requestAnimationFrame(() => setReady(true));
-        }
+        window.google.accounts.id.renderButton(btnRef.current, {
+          theme: "filled_black",
+          size: "large",
+          width: 400,
+          shape: "pill",
+          text: "continue_with",
+        });
+        initializedRef.current = true;
+        requestAnimationFrame(() => setReady(true));
       }
     };
 
-    // Try to load immediately if script already loaded
     if (window.google) {
       initGoogleButton();
     } else {
-      // Load the script
       const script = document.createElement("script");
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
@@ -64,14 +65,14 @@ function GoogleButton({
         console.error("Failed to load Google Identity Services");
       document.head.appendChild(script);
     }
-  }, [onSuccess]);
+  }, []);
 
   return (
     <div
-      className="flex justify-center w-full transition-opacity duration-300"
+      className="flex items-center justify-center w-full transition-opacity duration-300"
       style={{ minHeight: 44, opacity: ready ? 1 : 0 }}
     >
-      <div id="google-signin-btn" className="w-full" />
+      <div ref={btnRef} />
     </div>
   );
 }
