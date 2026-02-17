@@ -277,7 +277,9 @@ export async function GET(request: Request) {
       ];
     }
 
-    const [scans, total] = await Promise.all([
+    const userWhere = { userId: user.userId as string };
+
+    const [scans, total, safeCount, riskyCount] = await Promise.all([
       prisma.scan.findMany({
         where,
         orderBy: { createdAt: "desc" },
@@ -285,9 +287,21 @@ export async function GET(request: Request) {
         skip,
       }),
       prisma.scan.count({ where }),
+      prisma.scan.count({
+        where: { ...userWhere, riskScore: { lte: 25 } },
+      }),
+      prisma.scan.count({
+        where: { ...userWhere, riskScore: { gt: 70 } },
+      }),
     ]);
 
-    return NextResponse.json({ scans, total, page, limit });
+    return NextResponse.json({
+      scans,
+      total,
+      page,
+      limit,
+      stats: { safe: safeCount, risky: riskyCount },
+    });
   } catch (error) {
     console.error("Get scans error:", error);
     return NextResponse.json(

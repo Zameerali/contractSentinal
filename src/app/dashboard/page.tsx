@@ -6,10 +6,8 @@ import { useRouter } from "next/navigation";
 import RiskGauge from "@/components/RiskGauge";
 import { Select } from "@/ui/select";
 import {
-  ShieldCheckIcon,
   MagnifyingGlassIcon,
   ExclamationTriangleIcon,
-  ClockIcon,
   ArrowRightIcon,
   CheckCircleIcon,
   XCircleIcon,
@@ -54,8 +52,12 @@ export default function DashboardPage() {
       if (data.scans) {
         setRecentScans(data.scans);
         const total = data.total || 0;
-        const safe = data.scans.filter((s: any) => s.riskScore <= 25).length;
-        const risky = data.scans.filter((s: any) => s.riskScore > 70).length;
+        const safe =
+          data.stats?.safe ??
+          data.scans.filter((s: any) => s.riskScore <= 25).length;
+        const risky =
+          data.stats?.risky ??
+          data.scans.filter((s: any) => s.riskScore > 70).length;
         setStats({ total, safe, risky });
       }
     } catch (err) {
