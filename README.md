@@ -21,7 +21,7 @@ AI-powered smart contract security analyzer that detects honeypot contracts, rug
 
 - **Frontend:** Next.js 15, React 19, TypeScript, Tailwind CSS
 - **UI Components:** Custom Headless UI + pre-built design system
-- **Auth:** Custom JWT (argon2id + jose), refresh token rotation, reuse detection
+- **Auth:** Custom JWT (argon2id + jose), refresh token rotation, reuse detection, email verification, password reset, Google OAuth
 - **Database:** Prisma ORM + Supabase PostgreSQL
 - **AI:** Google Gemini 2.0 Flash via REST API
 - **Block Explorer:** Etherscan V2 API
@@ -48,13 +48,31 @@ npm install
 Create a `.env` file (already included with template values):
 
 ```env
+# Database
 DATABASE_URL="postgresql://..."
 DIRECT_URL="postgresql://..."
+
+# JWT
 JWT_ACCESS_SECRET="your-access-secret"
 JWT_REFRESH_SECRET="your-refresh-secret"
+
+# External APIs
 ETHERSCAN_API_KEY="your-etherscan-key"
 GEMINI_API_KEY="your-gemini-key"
+
+# Email (Gmail SMTP)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+
+# Google OAuth
+NEXT_PUBLIC_GOOGLE_CLIENT_ID="your-google-client-id"
+
+# App URL
+NEXT_PUBLIC_APP_URL="http://localhost:3001"
 ```
+
 
 ### Database Setup
 
@@ -136,12 +154,25 @@ contract-sentinel/
 └── package.json
 ```
 
+## Authentication Features
+
+- **Email Verification** — Users verify email on signup; verification tokens expire in 24 hours
+- **Password Reset** — Forgot password flow with 1-hour reset token; revokes all sessions on password change
+- **Google OAuth** — One-click sign-in/sign-up with Google; auto-verified accounts, email linking
+- **Session Management** — Access tokens (15 min), refresh tokens with rotation, secure httpOnly cookies
+- **Rate Limiting** — 3 password reset requests per hour per user to prevent abuse
+- **Audit Logging** — All auth events logged: registration, password reset, OAuth login
+
 ## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/register` | Register new user (sends verification email) |
+| POST | `/api/auth/login` | Login (requires verified email) |
+| GET | `/api/auth/verify-email` | Verify email with token |
+| POST | `/api/auth/forgot-password` | Request password reset (rate-limited) |
+| POST | `/api/auth/reset-password` | Reset password with token |
+| POST | `/api/auth/google` | Google OAuth login/signup |
 | POST | `/api/auth/refresh` | Refresh tokens |
 | POST | `/api/auth/logout` | Logout |
 | GET | `/api/auth/me` | Get current user |
@@ -165,13 +196,18 @@ contract-sentinel/
 
 ## Security Features
 
-- **argon2id** password hashing
-- **JWT access tokens** (15-minute expiry)
-- **Refresh token rotation** with reuse detection
-- **httpOnly cookies** for refresh tokens
-- **Rate limiting** (per-user and per-IP)
-- **Audit logging** for all sensitive actions
+- **argon2id** password hashing with salt rounds optimization
+- **JWT access tokens** (15-minute expiry) + refresh tokens with automatic rotation
+- **Refresh token rotation** with reuse detection (revokes entire token family on reuse)
+- **httpOnly cookies** for refresh tokens (prevents XSS attacks)
+- **CSRF protection** via secure cookie flags
+- **Rate limiting** (per-user and per-IP for auth endpoints)
+- **Email verification** tokens with expiration (24 hours)
+- **Password reset** tokens with single-use enforcement (1 hour expiry)
+- **Session revocation** on password reset (logs user out everywhere)
+- **Audit logging** for all sensitive actions (login, register, password reset, OAuth)
 - **Admin user ban/promote** controls
+- **No plaintext passwords** in logs or responses
 
 ## License
 
