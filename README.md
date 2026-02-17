@@ -4,6 +4,23 @@
 
 AI-powered smart contract security analyzer that detects honeypot contracts, rug pulls, and hidden exploits before you invest.
 
+## Live Demo
+
+**[Open ContractSentinel →](https://contract-sentinal.vercel.app/)**
+
+## Team
+
+| Name | Email |
+|------|-------|
+| Zameer Ali Mustafa | zameeralimustafa@gmail.com |
+| Minahil Shahid | minahilsh3@gmail.com |
+
+## Overview
+
+ContractSentinel is a **full-stack Web3 security application** that combines AI-powered smart contract analysis with an intuitive interface to help users identify malicious contracts before investing. Built with modern tech stack (Next.js 15, React 19, TypeScript, PostgreSQL), it features enterprise-grade security including JWT authentication, email verification, rate limiting, and comprehensive audit logging.
+
+
+
 ## Features
 
 - **AI-Powered Analysis** — Gemini 2.0 Flash scans source code for vulnerabilities
@@ -16,6 +33,7 @@ AI-powered smart contract security analyzer that detects honeypot contracts, rug
 - **Browser Extension** — Scan directly from Etherscan (Chrome MV3)
 - **Real-time Risk Gauge** — Animated canvas-based risk visualization
 - **Honeypot Detection** — Visual overlay warning + confetti on SAFE
+- **Enterprise Security** — JWT + refresh token rotation, argon2id hashing, rate limiting, audit logs
 
 ## Tech Stack
 
@@ -105,6 +123,17 @@ Try scanning these contracts:
 | Tether (USDT) | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | SAFE |
 | USD Coin (USDC) | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | SAFE |
 | DAI Stablecoin | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | SAFE |
+
+**Technical Highlights:**
+- Production deployment on Vercel with environment configuration
+- Secure authentication with JWT, refresh token rotation, and Google OAuth
+- AI-powered contract analysis using Gemini 2.0 Flash API
+- Responsive design with dark theme (Tailwind CSS)
+- Complete audit trail of all user actions
+- Rate limiting and security hardening (40+ fixes applied)
+- TypeScript strict mode for type safety
+
+
 
 ## Project Structure
 
