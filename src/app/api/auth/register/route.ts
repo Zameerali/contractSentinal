@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 import argon2 from "argon2";
 import prisma from "@/lib/prisma";
-import {
-  createAccessToken,
-  createRefreshToken,
-  hashToken,
-  setRefreshTokenCookie,
-} from "@/lib/auth";
 import { createAuditLog, getClientIP } from "@/lib/audit";
+import { sendVerificationEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -56,27 +51,31 @@ export async function POST(request: Request) {
         email: email.toLowerCase(),
         passwordHash,
         name: name || null,
-        isVerified: true,
+        isVerified: false,
       },
     });
 
-    const accessToken = await createAccessToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
-    const refreshToken = await createRefreshToken({ userId: user.id });
-    const tokenHash = await hashToken(refreshToken);
-
-    await prisma.refreshToken.create({
+    // Create verification token
+    const verificationToken = crypto.randomUUID() + "-" + crypto.randomUUID();
+    await prisma.verificationToken.create({
       data: {
-        tokenHash,
+        token: verificationToken,
         userId: user.id,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       },
     });
 
-    await setRefreshTokenCookie(refreshToken);
+    // Send verification email
+    try {
+      await sendVerificationEmail(
+        user.email,
+        verificationToken,
+        user.name || undefined,
+      );
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError);
+    }
+
     await createAuditLog({
       userId: user.id,
       action: "REGISTER",
@@ -85,13 +84,15 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
+      message:
+        "Account created! Please check your email to verify your account.",
+      requiresVerification: true,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
       },
-      accessToken,
     });
   } catch (error) {
     console.error("Registration error:", error);
