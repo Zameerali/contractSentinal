@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -10,7 +10,64 @@ import {
   EyeSlashIcon,
   ArrowRightIcon,
   CheckIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
+
+function GoogleButton({
+  onSuccess,
+}: {
+  onSuccess: (credential: string) => void;
+}) {
+  useEffect(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      console.warn("NEXT_PUBLIC_GOOGLE_CLIENT_ID not set");
+      return;
+    }
+
+    const initGoogleButton = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response: any) => {
+            if (response.credential) {
+              onSuccess(response.credential);
+            }
+          },
+        });
+        const button = document.getElementById("google-register-btn");
+        if (button) {
+          window.google.accounts.id.renderButton(button, {
+            theme: "filled_black",
+            size: "large",
+            width: "100%",
+            shape: "pill",
+            text: "signup_with",
+          });
+        }
+      }
+    };
+
+    // Try to load immediately if script already loaded
+    if (window.google) {
+      initGoogleButton();
+    } else {
+      // Load the script
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogleButton;
+      script.onerror = () =>
+        console.error("Failed to load Google Identity Services");
+      document.head.appendChild(script);
+    }
+  }, [onSuccess]);
+
+  return (
+    <div id="google-register-btn" className="flex justify-center w-full" />
+  );
+}
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -19,7 +76,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const [verificationSent, setVerificationSent] = useState(false);
+  const { register, loginWithGoogle } = useAuth();
   const router = useRouter();
 
   const passwordChecks = [
@@ -34,14 +92,65 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(email, password, name);
-      router.push("/dashboard");
+      const result = await register(email, password, name);
+      if (result?.requiresVerification) {
+        setVerificationSent(true);
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       setError(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleGoogleSignup = async (credential: string) => {
+    setError("");
+    setLoading(true);
+    try {
+      await loginWithGoogle(credential);
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Google signup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Verification sent screen
+  if (verificationSent) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
+        <div className="fixed inset-0 bg-grid opacity-[0.02]" />
+        <div className="fixed left-1/2 top-1/3 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-emerald-500/5 blur-[120px]" />
+
+        <div className="relative z-10 w-full max-w-md text-center">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8 shadow-2xl shadow-black/50">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/30">
+              <EnvelopeIcon className="h-8 w-8 text-emerald-400" />
+            </div>
+            <h2 className="text-xl font-bold text-white">Check your email</h2>
+            <p className="mt-2 text-sm text-zinc-400">
+              We&apos;ve sent a verification link to{" "}
+              <span className="font-medium text-white">{email}</span>
+            </p>
+            <p className="mt-4 text-xs text-zinc-600">
+              Click the link in the email to activate your account. The link
+              expires in 24 hours.
+            </p>
+            <Link
+              href="/login"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 hover:bg-emerald-400 transition-all"
+            >
+              Go to Login
+              <ArrowRightIcon className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
@@ -75,6 +184,22 @@ export default function RegisterPage() {
               {error}
             </div>
           )}
+
+          {/* Google Sign Up */}
+          <div className="mb-6">
+            <GoogleButton onSuccess={handleGoogleSignup} />
+          </div>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-zinc-800" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-zinc-900/50 px-4 text-zinc-500">
+                or sign up with email
+              </span>
+            </div>
+          </div>
 
           <div className="space-y-5">
             <div>
