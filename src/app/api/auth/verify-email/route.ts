@@ -20,8 +20,10 @@ export async function GET(request: Request) {
       );
     }
 
+    // Hash the incoming token to match stored hash
+    const hashedToken = await hashToken(token);
     const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token },
+      where: { token: hashedToken },
       include: { user: true },
     });
 

@@ -8,6 +8,7 @@ import {
   setRefreshTokenCookie,
 } from "@/lib/auth";
 import { createAuditLog, getClientIP } from "@/lib/audit";
+import { checkAuthRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
@@ -28,8 +29,20 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return NextResponse.json(
+        {
+          error:
+            "Password must contain at least one uppercase letter and one number",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Hash the incoming token to match stored hash
+    const hashedToken = await hashToken(token);
     const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
+      where: { token: hashedToken },
       include: { user: true },
     });
 

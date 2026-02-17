@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 
+/** Escape HTML entities to prevent XSS */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function GET(request: Request) {
   try {
     const user = await getAuthUser(request);
@@ -60,7 +70,7 @@ export async function GET(request: Request) {
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>ContractSentinel Report - ${scan.contractAddress}</title>
+  <title>ContractSentinel Report - ${escapeHtml(scan.contractAddress || "")}</title>
   <style>
     @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -120,11 +130,11 @@ export async function GET(request: Request) {
     <div class="info-grid">
       <div class="info-item">
         <label>Contract Address</label>
-        <p style="font-family: monospace; font-size: 12px;">${scan.contractAddress}</p>
+        <p style="font-family: monospace; font-size: 12px;">${escapeHtml(scan.contractAddress || "")}</p>
       </div>
       <div class="info-item">
         <label>Contract Name</label>
-        <p>${scan.contractName || "Unknown"}</p>
+        <p>${escapeHtml(scan.contractName || "Unknown")}</p>
       </div>
       <div class="info-item">
         <label>Chain</label>
@@ -150,7 +160,7 @@ export async function GET(request: Request) {
       ${getVerdictEmoji(scan.verdict || "")} ${scan.riskScore}/100
     </div>
     <div class="verdict ${(scan.riskScore || 0) <= 25 ? "safe" : (scan.riskScore || 0) <= 70 ? "medium" : "high"}">
-      ${scan.verdict || "UNKNOWN"}
+      ${escapeHtml(scan.verdict || "UNKNOWN")}
     </div>
   </div>
 
@@ -159,7 +169,7 @@ export async function GET(request: Request) {
       ? `
   <div class="section">
     <div class="section-title">Analysis Summary</div>
-    <div class="summary">${scan.explanation}</div>
+    <div class="summary">${escapeHtml(scan.explanation || "")}</div>
   </div>
   `
       : ""
@@ -174,8 +184,8 @@ export async function GET(request: Request) {
       .map(
         (f: any) => `
       <div class="finding ${(f.severity || "info").toLowerCase()}">
-        <div class="finding-title">${f.title || f.pattern}</div>
-        ${f.description ? `<div class="finding-desc">${f.description}</div>` : ""}
+        <div class="finding-title">${escapeHtml(f.title || f.pattern || "")}</div>
+        ${f.description ? `<div class="finding-desc">${escapeHtml(f.description)}</div>` : ""}
         <div class="finding-severity" style="color: ${f.severity === "critical" ? "#ef4444" : f.severity === "high" ? "#f97316" : f.severity === "medium" ? "#f59e0b" : "#71717a"}">${f.severity || "info"}</div>
       </div>
     `,
@@ -191,7 +201,7 @@ export async function GET(request: Request) {
       ? `
   <div class="section">
     <div class="section-title">Recommendations</div>
-    ${recommendations.map((r: string) => `<div class="rec">${r}</div>`).join("")}
+    ${recommendations.map((r: string) => `<div class="rec">${escapeHtml(r)}</div>`).join("")}
   </div>
   `
       : ""

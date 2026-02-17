@@ -3,11 +3,22 @@ import argon2 from "argon2";
 import prisma from "@/lib/prisma";
 import { createAuditLog, getClientIP } from "@/lib/audit";
 import { sendVerificationEmail } from "@/lib/email";
+import { hashToken } from "@/lib/auth";
+import { checkAuthRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
     const { email, password, name } = await request.json();
     const ip = getClientIP(request);
+
+    // Rate limit registration attempts
+    const rateCheck = await checkAuthRateLimit(ip);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again later." },
+        { status: 429 },
+      );
+    }
 
     if (!email || !password) {
       return NextResponse.json(
@@ -18,6 +29,16 @@ export async function POST(request: Request) {
     if (password.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters" },
+        { status: 400 },
+      );
+    }
+    // Server-side password complexity (match frontend rules)
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return NextResponse.json(
+        {
+          error:
+            "Password must contain at least one uppercase letter and one number",
+        },
         { status: 400 },
       );
     }
@@ -55,11 +76,12 @@ export async function POST(request: Request) {
       },
     });
 
-    // Create verification token
+    // Create verification token (store hash, send plaintext)
     const verificationToken = crypto.randomUUID() + "-" + crypto.randomUUID();
+    const tokenHash = await hashToken(verificationToken);
     await prisma.verificationToken.create({
       data: {
-        token: verificationToken,
+        token: tokenHash,
         userId: user.id,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       },

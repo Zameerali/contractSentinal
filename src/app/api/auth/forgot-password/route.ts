@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { createAuditLog, getClientIP } from "@/lib/audit";
+import { hashToken } from "@/lib/auth";
+import { checkAuthRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +12,15 @@ export async function POST(request: Request) {
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+
+    // Rate limit forgot-password attempts
+    const rateCheck = await checkAuthRateLimit(ip);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again later." },
+        { status: 429 },
+      );
     }
 
     // Always return success to prevent email enumeration
@@ -44,11 +55,12 @@ export async function POST(request: Request) {
       data: { used: true },
     });
 
-    // Create new token
+    // Create new token (store hash, send plaintext)
     const token = crypto.randomUUID() + "-" + crypto.randomUUID();
+    const tokenHash = await hashToken(token);
     await prisma.passwordResetToken.create({
       data: {
-        token,
+        token: tokenHash,
         userId: user.id,
         expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
       },
