@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { width: 380px; min-height: 480px; background: #09090b; color: #d4d4d8; font-family: system-ui, -apple-system, sans-serif; }
+    body { width: 380px; background: #09090b; color: #d4d4d8; font-family: system-ui, -apple-system, sans-serif; }
     .header { display: flex; align-items: center; gap: 10px; padding: 16px; border-bottom: 1px solid #27272a; }
     .header img { width: 24px; height: 24px; }
     .header h1 { font-size: 16px; font-weight: 700; color: white; }
@@ -21,7 +21,26 @@
     input, select { width: 100%; padding: 10px 12px; background: #18181b; border: 1px solid #27272a; border-radius: 10px; color: white; font-size: 13px; outline: none; }
     input:focus, select:focus { border-color: rgba(16, 185, 129, 0.5); }
     input[type="text"], input[type="password"] { font-family: monospace; }
-    select { cursor: pointer; font-family: system-ui; }
+    select { 
+      cursor: pointer; 
+      font-family: system-ui;
+      appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23a1a1aa" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 18px;
+      padding-right: 36px;
+    }
+    select option {
+      background: #18181b;
+      color: white;
+      padding: 8px 12px;
+    }
+    select option:hover,
+    select option:checked {
+      background: #10b981;
+      color: white;
+    }
     .btn { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
     .btn:hover { background: #059669; }
     .btn:disabled { opacity: 0.3; cursor: not-allowed; }

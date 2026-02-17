@@ -43,6 +43,16 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!user.passwordHash) {
+      return NextResponse.json(
+        {
+          error:
+            "This account uses Google sign-in. Please use the Google button to log in.",
+        },
+        { status: 401 },
+      );
+    }
+
     const validPassword = await argon2.verify(user.passwordHash, password);
     if (!validPassword) {
       await createAuditLog({
@@ -54,6 +64,17 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 },
+      );
+    }
+
+    if (!user.isVerified) {
+      return NextResponse.json(
+        {
+          error:
+            "Please verify your email before logging in. Check your inbox for the verification link.",
+          needsVerification: true,
+        },
+        { status: 403 },
       );
     }
 

@@ -21,7 +21,12 @@ interface AuthContextType {
   accessToken: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name?: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    name?: string,
+  ) => Promise<{ requiresVerification?: boolean }>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   logout: () => Promise<void>;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
@@ -117,6 +122,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Registration failed");
+
+    if (data.requiresVerification) {
+      return { requiresVerification: true };
+    }
+
+    if (data.accessToken) {
+      setUser(data.user);
+      setAccessToken(data.accessToken);
+    }
+    return {};
+  };
+
+  const loginWithGoogle = async (credential: string) => {
+    const res = await fetch("/api/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential }),
+      credentials: "include",
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Google login failed");
     setUser(data.user);
     setAccessToken(data.accessToken);
   };
@@ -133,7 +159,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, loading, login, register, logout, authFetch }}
+      value={{
+        user,
+        accessToken,
+        loading,
+        login,
+        register,
+        loginWithGoogle,
+        logout,
+        authFetch,
+      }}
     >
       {children}
     </AuthContext.Provider>

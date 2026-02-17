@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -11,13 +11,67 @@ import {
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 
+function GoogleButton({
+  onSuccess,
+}: {
+  onSuccess: (credential: string) => void;
+}) {
+  useEffect(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      console.warn("NEXT_PUBLIC_GOOGLE_CLIENT_ID not set");
+      return;
+    }
+
+    const initGoogleButton = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response: any) => {
+            if (response.credential) {
+              onSuccess(response.credential);
+            }
+          },
+        });
+        const button = document.getElementById("google-signin-btn");
+        if (button) {
+          window.google.accounts.id.renderButton(button, {
+            theme: "filled_black",
+            size: "large",
+            width: "100%",
+            shape: "pill",
+            text: "continue_with",
+          });
+        }
+      }
+    };
+
+    // Try to load immediately if script already loaded
+    if (window.google) {
+      initGoogleButton();
+    } else {
+      // Load the script
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogleButton;
+      script.onerror = () =>
+        console.error("Failed to load Google Identity Services");
+      document.head.appendChild(script);
+    }
+  }, [onSuccess]);
+
+  return <div id="google-signin-btn" className="flex justify-center w-full" />;
+}
+
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -32,6 +86,20 @@ function LoginForm() {
       router.push(redirect);
     } catch (err: any) {
       setError(err.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async (credential: string) => {
+    setError("");
+    setLoading(true);
+    try {
+      await loginWithGoogle(credential);
+      const redirect = searchParams.get("redirect") || "/dashboard";
+      router.push(redirect);
+    } catch (err: any) {
+      setError(err.message || "Google login failed");
     } finally {
       setLoading(false);
     }
@@ -68,6 +136,22 @@ function LoginForm() {
             </div>
           )}
 
+          {/* Google Sign In */}
+          <div className="mb-6">
+            <GoogleButton onSuccess={handleGoogleLogin} />
+          </div>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-zinc-800" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-zinc-900/50 px-4 text-zinc-500">
+                or continue with email
+              </span>
+            </div>
+          </div>
+
           <div className="space-y-5">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-zinc-300">
@@ -84,9 +168,17 @@ function LoginForm() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-300">
-                Password
-              </label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="block text-sm font-medium text-zinc-300">
+                  Password
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}

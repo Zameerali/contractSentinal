@@ -12,16 +12,45 @@ model User {
   id              String    @id @default(cuid())
   email           String    @unique
   name            String?
-  passwordHash    String
+  passwordHash    String?
   role            Role      @default(USER)
   isVerified      Boolean   @default(false)
   twoFactorSecret String?
   banned          Boolean   @default(false)
+  googleId        String?   @unique
+  avatarUrl       String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   scans           Scan[]
   auditLogs       AuditLog[]
   refreshTokens   RefreshToken[]
+  verificationTokens VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
 }
 
 model Scan {
