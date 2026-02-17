@@ -18,7 +18,7 @@ export async function createAuditLog({
         userId: userId || null,
         action,
         ipAddress: ipAddress || null,
-        details: details || null,
+        details: details ?? undefined,
       },
     });
   } catch (error) {

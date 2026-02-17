@@ -182,13 +182,15 @@ export default function ScanDetailPage({
             <div>
               <p className="text-xs text-zinc-500">Chain</p>
               <p className="text-sm font-medium text-white">
-                {{
-                  1: "Ethereum",
-                  137: "Polygon",
-                  42161: "Arbitrum",
-                  10: "Optimism",
-                  56: "BNB Chain",
-                }[scan.chainId] || "Unknown"}
+                {(
+                  {
+                    1: "Ethereum",
+                    137: "Polygon",
+                    42161: "Arbitrum",
+                    10: "Optimism",
+                    56: "BNB Chain",
+                  } as Record<number, string>
+                )[scan.chainId] || "Unknown"}
               </p>
             </div>
             <div className="sm:col-span-2">
@@ -198,7 +200,7 @@ export default function ScanDetailPage({
                   {scan.contractAddress}
                 </p>
                 <a
-                  href={`${{ 1: "https://etherscan.io", 137: "https://polygonscan.com", 42161: "https://arbiscan.io", 10: "https://optimistic.etherscan.io", 56: "https://bscscan.com" }[scan.chainId] || "https://etherscan.io"}/address/${scan.contractAddress}`}
+                  href={`${({ 1: "https://etherscan.io", 137: "https://polygonscan.com", 42161: "https://arbiscan.io", 10: "https://optimistic.etherscan.io", 56: "https://bscscan.com" } as Record<number, string>)[scan.chainId] || "https://etherscan.io"}/address/${scan.contractAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-emerald-400 hover:text-emerald-300 shrink-0"
