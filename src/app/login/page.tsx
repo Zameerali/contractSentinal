@@ -16,6 +16,8 @@ function GoogleButton({
 }: {
   onSuccess: (credential: string) => void;
 }) {
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!clientId) {
@@ -42,6 +44,8 @@ function GoogleButton({
             shape: "pill",
             text: "continue_with",
           });
+          // Fade in after render
+          requestAnimationFrame(() => setReady(true));
         }
       }
     };
@@ -62,7 +66,14 @@ function GoogleButton({
     }
   }, [onSuccess]);
 
-  return <div id="google-signin-btn" className="flex justify-center w-full" />;
+  return (
+    <div
+      className="flex justify-center w-full transition-opacity duration-300"
+      style={{ minHeight: 44, opacity: ready ? 1 : 0 }}
+    >
+      <div id="google-signin-btn" className="w-full" />
+    </div>
+  );
 }
 
 function LoginForm() {
