@@ -208,7 +208,7 @@
 
       const chain = detectChain()
       const stored = await chrome.storage.local.get(['authToken', 'serverUrl'])
-      const serverUrl = stored.serverUrl || 'http://localhost:3001'
+      const serverUrl = stored.serverUrl || 'https://contract-sentinal.vercel.app'
 
       if (!stored.authToken) {
         badge.innerHTML = '⚠️ Sign in via extension popup first'

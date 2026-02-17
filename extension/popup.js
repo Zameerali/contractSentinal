@@ -1,6 +1,6 @@
 // ContractSentinel Browser Extension - Popup Script
 
-let API_BASE = 'http://localhost:3001'
+let API_BASE = 'https://contract-sentinal.vercel.app'
 let authToken = null
 let userEmail = null
 
@@ -183,7 +183,7 @@ logoutBtn.addEventListener('click', async () => {
 // ── Settings ──────────────────────────────────────────────────────
 saveSettingsBtn.addEventListener('click', async () => {
   let url = serverUrlInput.value.trim()
-  if (!url) url = 'http://localhost:3001'
+  if (!url) url = 'https://contract-sentinal.vercel.app'
   // Remove trailing slash
   url = url.replace(/\/+$/, '')
   API_BASE = url

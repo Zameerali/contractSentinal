@@ -10,6 +10,8 @@
         "contextMenus"
     ],
     "host_permissions": [
+        "https://contract-sentinal.vercel.app/*",
+        "http://localhost:3000/*",
         "http://localhost:3001/*"
     ],
     "icons": {
