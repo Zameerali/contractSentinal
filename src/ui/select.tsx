@@ -111,7 +111,7 @@ export const Select = forwardRef<HTMLDivElement, CustomSelectProps>(
                     // position the popover absolutely so it doesn't push other content
                     `absolute  ${
                       selectMenuPosition ? selectMenuPosition : "top-full"
-                    } left-0 z-50 mt-2`,
+                    } left-0 z-[9999] mt-2`,
                     // Anchor positioning (kept as CSS vars, no behavior props)
                     "[--anchor-gap:--spacing(1)] [--anchor-padding:--spacing(1)]",
                     // Base styles

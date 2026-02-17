@@ -58,7 +58,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-950">
+    <div className="flex h-screen bg-zinc-950">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
@@ -89,9 +89,9 @@ export default function DashboardLayout({
       </div>
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col min-w-0">
         {/* Top bar */}
-        <header className="flex h-16 shrink-0 items-center gap-4 border-b border-zinc-800 bg-zinc-950/80 px-4 backdrop-blur-xl lg:px-8">
+        <header className="relative z-50 flex h-16 shrink-0 items-center gap-4 border-b border-zinc-800 bg-zinc-950/80 px-4 backdrop-blur-xl lg:px-8">
           <button
             onClick={() => setSidebarOpen(true)}
             className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white lg:hidden"
@@ -129,18 +129,22 @@ export default function DashboardLayout({
                   </span>
                   <ChevronDownIcon className="h-4 w-4" />
                 </button>
-                <div className="absolute right-0 top-full z-50 mt-1 hidden w-48 rounded-xl border border-zinc-800 bg-zinc-900 p-1 shadow-2xl group-hover:block">
-                  <div className="px-3 py-2 text-xs text-zinc-500">
-                    {user?.email}
+                {/* Invisible bridge to prevent hover gap */}
+                <div className="absolute right-0 top-full h-2 w-48 hidden group-hover:block" />
+                <div className="absolute right-0 top-full z-50 pt-1 hidden w-48 group-hover:block">
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-1 shadow-2xl">
+                    <div className="px-3 py-2 text-xs text-zinc-500">
+                      {user?.email}
+                    </div>
+                    <div className="border-t border-zinc-800" />
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10"
+                    >
+                      <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                      Sign Out
+                    </button>
                   </div>
-                  <div className="border-t border-zinc-800" />
-                  <button
-                    onClick={handleLogout}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10"
-                  >
-                    <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                    Sign Out
-                  </button>
                 </div>
               </div>
             </div>

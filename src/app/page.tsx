@@ -82,57 +82,57 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section — Split Layout */}
-      <section className="relative w-full h-screen flex items-center justify-center px-6">
-        <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2 w-full">
-          {/* Left — Text */}
-          <div>
-            <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1 text-xs font-medium text-zinc-400">
-              <ShieldCheckIcon className="h-3.5 w-3.5 text-emerald-400" />
-              AI-Powered Smart Contract Security
+      <section className="relative w-full px-6 py-20 lg:py-32">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+            {/* Left — Text */}
+            <div>
+              <div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1 text-xs font-medium text-zinc-400">
+                <ShieldCheckIcon className="h-3.5 w-3.5 text-emerald-400" />
+                AI-Powered Smart Contract Security
+              </div>
+
+              <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+                Detect rug pulls
+                <br />
+                <span className="text-emerald-400">before you invest</span>
+              </h1>
+
+              <p className="mb-8 max-w-lg text-base text-zinc-400 leading-relaxed">
+                ContractSentinel scans smart contracts for honeypot traps,
+                hidden exploits, and known scam patterns using AI analysis.
+                Multi-chain support, batch scanning, and detailed PDF reports.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3 mb-10">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-400 transition-colors"
+                >
+                  Start Scanning Free
+                  <ArrowRightIcon className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-zinc-300 hover:border-zinc-700 hover:text-white transition-colors"
+                >
+                  Sign In
+                </Link>
+              </div>
+
+              {/* Compact stats */}
+              <div className="flex flex-wrap gap-6 text-sm">
+                {stats.map((s, i) => (
+                  <div key={i}>
+                    <p className="text-lg font-bold text-white">{s.value}</p>
+                    <p className="text-xs text-zinc-500">{s.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-              Detect rug pulls
-              <br />
-              <span className="text-emerald-400">before you invest</span>
-            </h1>
-
-            <p className="mb-8 max-w-lg text-base text-zinc-400 leading-relaxed">
-              ContractSentinel scans smart contracts for honeypot traps, hidden
-              exploits, and known scam patterns using AI analysis. Multi-chain
-              support, batch scanning, and detailed PDF reports.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 mb-10">
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-400 transition-colors"
-              >
-                Start Scanning Free
-                <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-zinc-300 hover:border-zinc-700 hover:text-white transition-colors"
-              >
-                Sign In
-              </Link>
-            </div>
-
-            {/* Compact stats */}
-            <div className="flex flex-wrap gap-6 text-sm">
-              {stats.map((s, i) => (
-                <div key={i}>
-                  <p className="text-lg font-bold text-white">{s.value}</p>
-                  <p className="text-xs text-zinc-500">{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right — Mock scan card */}
-          <div className="hidden lg:block">
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 space-y-4">
+            {/* Right — Mock scan card */}
+            <div className="hidden lg:block rounded-xl border border-zinc-800 bg-zinc-900 p-5 space-y-4">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
