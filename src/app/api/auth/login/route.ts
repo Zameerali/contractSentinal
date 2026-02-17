@@ -8,11 +8,21 @@ import {
   setRefreshTokenCookie,
 } from "@/lib/auth";
 import { createAuditLog, getClientIP } from "@/lib/audit";
+import { checkAuthRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
     const ip = getClientIP(request);
+
+    // Rate limit login attempts (brute-force protection)
+    const rateCheck = await checkAuthRateLimit(ip);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Please try again later." },
+        { status: 429 },
+      );
+    }
 
     if (!email || !password) {
       return NextResponse.json(

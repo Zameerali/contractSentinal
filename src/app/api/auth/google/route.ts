@@ -8,6 +8,7 @@ import {
   setRefreshTokenCookie,
 } from "@/lib/auth";
 import { createAuditLog, getClientIP } from "@/lib/audit";
+import { checkAuthRateLimit } from "@/lib/rate-limit";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -15,6 +16,15 @@ export async function POST(request: Request) {
   try {
     const { credential } = await request.json();
     const ip = getClientIP(request);
+
+    // Rate limit auth attempts
+    const rateCheck = await checkAuthRateLimit(ip);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again later." },
+        { status: 429 },
+      );
+    }
 
     if (!credential) {
       return NextResponse.json(
