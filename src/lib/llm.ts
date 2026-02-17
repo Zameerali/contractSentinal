@@ -1,6 +1,17 @@
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
+if (!ETHERSCAN_API_KEY) {
+  console.warn(
+    "[ContractSentinel] ETHERSCAN_API_KEY is not set. Contract source fetching will fail.",
+  );
+}
+if (!GEMINI_API_KEY) {
+  console.warn(
+    "[ContractSentinel] GEMINI_API_KEY is not set. AI analysis will fail.",
+  );
+}
+
 // All chains use Etherscan V2 unified API with chainid parameter
 const CHAIN_CONFIG: Record<
   number,
