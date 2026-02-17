@@ -186,7 +186,7 @@ async function fetchTokenHoldings(
       return FALLBACK_TOKENS[chainId] || FALLBACK_TOKENS[1];
     }
 
-    // Filter tokens with non-zero balance, cap at 50
+    // Filter tokens with non-zero balance, cap at 20
     const nonZeroTokens = balancesData.result.tokenBalances
       .filter(
         (tb: any) =>
@@ -196,7 +196,7 @@ async function fetchTokenHoldings(
           tb.tokenBalance !== "0x0" &&
           tb.tokenBalance !== "0x",
       )
-      .slice(0, 50);
+      .slice(0, 20);
 
     if (nonZeroTokens.length === 0) {
       return [];
