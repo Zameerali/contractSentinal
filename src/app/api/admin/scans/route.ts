@@ -64,7 +64,11 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "scanId required" }, { status: 400 });
     }
 
-    await prisma.scan.delete({ where: { id: scanId } });
+    // Cascade delete: remove related reports first, then the scan
+    await prisma.$transaction([
+      prisma.report.deleteMany({ where: { scanId } }),
+      prisma.scan.delete({ where: { id: scanId } }),
+    ]);
 
     await prisma.auditLog.create({
       data: {
