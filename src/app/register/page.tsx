@@ -77,8 +77,33 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
-  const { register, loginWithGoogle } = useAuth();
+  const { user, loading: authLoading, register, loginWithGoogle } = useAuth();
   const router = useRouter();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/dashboard");
+    }
+  }, [authLoading, user, router]);
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+        <div className="fixed inset-0 bg-grid opacity-[0.02]" />
+        <div className="fixed left-1/2 top-1/3 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-emerald-500/5 blur-[120px]" />
+        <div className="relative z-10">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500/30 border-t-emerald-500" />
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if user is logged in or auth is still loading (handled above)
+  if (authLoading || user) {
+    return null;
+  }
 
   const passwordChecks = [
     { label: "At least 8 characters", met: password.length >= 8 },
