@@ -3,6 +3,7 @@
 let API_BASE = 'https://contract-sentinal.vercel.app'
 let authToken = null
 let userEmail = null
+let initialized = false
 
 // ── DOM Elements ──────────────────────────────────────────────────────
 const addressInput = document.getElementById('address')
@@ -287,15 +288,19 @@ scanBtn.addEventListener('click', async () => {
       `
 
       // Send result to content script for page overlay
-      try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-        if (tab?.id) {
-          chrome.tabs.sendMessage(tab.id, {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs.length > 0) {
+          chrome.tabs.sendMessage(tabs[0].id, {
             type: 'SCAN_RESULT',
             data: { ...data, chainName }
+          }, (response) => {
+            if (chrome.runtime.lastError) {
+              // Content script not available on this tab - that's OK
+              console.log('Content script not available:', chrome.runtime.lastError.message)
+            }
           })
         }
-      } catch { }
+      })
     }
   } catch (err) {
     resultDiv.innerHTML = `
